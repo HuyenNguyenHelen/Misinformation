@@ -1,4 +1,90 @@
+import os
+import glob
+import pandas as pd
+
+"""
+    Merging Science Direct files
+    Collected Files exist in the folders:
+    raw_ScienceDirect____ ScienceDirect___________ SD Disinfo: 10 files
+                  |                  |_____ SD fake news: 10 files
+                  |                  |_____ SD Spam: 10 files
+                  |                  |_____ SD troll: 10 files
+                  |__ ScienceDirect______ metadata_ScDr_misinformation.csv
+                                     |__ metadata_ScDr_rumor.csv
+"""
+def merge_SD_multi(root_p, wanted_fields, wanted_size):
+    """
+    :param root_p: str of path
+    :param wanted_fields: list
+    :param wanted_size: integer
+    :return: df
+    """
+    query_name = {
+        'SD Disinfo': 'disinformation',
+        'SD fake news': 'fake+news',
+        'SD Spam': 'spam',
+        'SD troll': 'troll'
+    }
+    all_data = []
+    for fold in os.listdir(root_p):
+        print(query_name[fold])
+        data = []
+        for file_p in glob.glob('%s\%s\*.csv' % (root_p, fold)):
+            #             print(file_p)
+            try:
+                with open(file_p, 'r') as f:
+                    df = pd.read_csv(f)
+            except:
+                with open(file_p, 'r', encoding='utf-8') as f:
+                    df = pd.read_csv(f)
+            data.append(df)
+            dfs = pd.concat(data)
+            dfs['query'] = query_name[fold]
+
+            if wanted_size is not None:
+                wanted_size = wanted_size
+            else:
+                wanted_size = len(dfs)
+                # print('df.shape', dfs.shape)
+            all_data.append(dfs[wanted_fields][:wanted_size])
+
+    all_dfs = pd.concat(all_data)
+    print('all_dfs.shape', all_dfs.shape)
+    return all_dfs
+
+
+def merge_SD_single(root_p, wanted_fields, wanted_size):
+    data = []
+    for file_p in glob.glob('%s\*.csv' % (root_p)):
+        query = file_p.split('\\')[-1].split('_')[-1].split('.')[0]
+        print(query)
+        try:
+            with open(file_p, 'r') as f:
+                df = pd.read_csv(f)
+        except:
+            with open(file_p, 'r', encoding='utf-8') as f:
+                df = pd.read_csv(f)
+        df['query'] = query
+
+        if wanted_size is not None:
+            wanted_size = wanted_size
+        else:
+            wanted_size = len(df)
+        data.append(df[wanted_fields][:wanted_size])
+    dfs = pd.concat(data)
+    print('dfs.shape', dfs.shape)
+    return dfs
+
+
+
 def merge_cross_DBs(root_p, wanted_fields, wanted_size=1000):
+    """
+    Merge data collected from the 4 databases
+    :param root_p: str of path
+    :param wanted_fields: list
+    :param wanted_size: int
+    :return: df
+    """
     fold_names = {
         'scopus': 'Scopus csv',
         'semantic_scholar': "Semantic_scholar",
@@ -89,6 +175,28 @@ def merge_cross_DBs(root_p, wanted_fields, wanted_size=1000):
 
 
 if __name__ == "__main__":
+    # Merge files from science direct database
+    wanted_fields = ['Item type', 'Authors', 'Title', 'Journal', 'Publication year',
+                     'Volume', 'Issue', 'Pages', 'Date published', 'ISSN', 'URLs', 'DOI',
+                     'Abstract', 'Keywords', 'Notes', 'query']
+    root = r"C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata"
+    out_p = root + '\merged_ScienceDirect'
+
+    sd_multi_f = merge_SD_multi(
+        root + "\\raw_ScienceDirect\\ScienceDirect", wanted_fields, wanted_size=None)
+    sd_single_f = merge_SD_single(
+        root + "\\raw_ScienceDirect\\Science_direct", wanted_fields, wanted_size=None)
+    concat_SD = pd.concat([sd_multi_f, sd_single_f])
+    print('the SD concatenated data has %d examples, and %d columns.' % (concat_SD.shape[0], concat_SD.shape[1]))
+    print(concat_SD.columns)
+    try:
+        os.makedirs(out_p, exist_ok=True)
+    except OSError as error:
+        print('Directory cannot be created!')
+    with open(out_p + '\ScienceDirect.csv', 'w', encoding='utf-8', newline='') as f:
+        concat_SD.to_csv(f)
+
+    # Merge files from the 4 databases into 1 single csv file
     root_p = r"C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata"
     wanted_fields = ['title', 'authors', 'venue', 'year', 'citationCount', 'fieldsOfStudy', 'abstract', 'doi', 'query',
                      'database']
