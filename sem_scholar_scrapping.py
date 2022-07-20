@@ -1,11 +1,13 @@
 # from bs4 import BeautifulSoup
 import requests, json, csv
 import pandas as pd
+import re
 
 def scrape_meta_by_query (query, start_from, no_limit, fields):
+    headers = create_headers()
     url = 'https://api.semanticscholar.org/graph/v1/paper/search?query={}&offset={}&limit={}&fields={}'.format(
         query, start_from, no_limit, fields)
-    data = requests.get(url, allow_redirects=True).text
+    data = requests.get(url, allow_redirects=True, headers=headers).text
     dic_data = json.loads(data)
     no_total = dic_data['total']
     offset = dic_data['offset']
@@ -37,7 +39,7 @@ def main_by_query ():
 
 def create_headers():
     APIkey = 'Z7TWzEV1Wb5PBEjBkp3rL30fdqqEmfb0501oqtLb'
-    headers = {"Authorization": "{}".format(APIkey)}
+    headers = {"x-api-key": "{}".format(APIkey)}
     return headers
 
 
@@ -46,32 +48,87 @@ def scrape_venue_by_doi(doi, fields):
     url = 'https://api.semanticscholar.org/graph/v1/paper/{}?fields={}'.format(doi, fields)
     data = requests.get(url, allow_redirects=True, headers=headers).text
     dic_data = json.loads(data)
-    print(dic_data)
+    print(data)
     if 'error' not in dic_data.keys():
         return dic_data['venue']
     else:
         return ''
-    # no_total = dic_data['total']
-    # offset = dic_data['offset']
-    # df = pd.json_normalize(dic_data['data'])
-    # return dic_data['venue']
 
 
 def main_by_doi ():
-    data_p = r"C:\Users\huyen\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\null_venues.csv"
+    data_p = r"C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\null_venues.csv"
     with open(data_p, 'r', encoding = 'utf-8') as f:
         data = pd.read_csv(f)
     data_copy = data.copy()
-    data_copy['venue'] = data_copy['doi'].apply(lambda x: scrape_venue_by_doi(doi = x, fields = 'venue') if isinstance(x, str) else None)
-    print(data_copy['venue'].value_counts() )
-    # for doi in data.doi:
-    #     if len(doi)>0:
-    #         venue = scrape_venue_by_doi(doi = doi, fields = 'venue')
-    out_p = r"C:\Users\huyen\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\null_venues_filled-by-doi.csv"
-    with open(out_p, 'w', encoding = 'utf-8') as f:
+    data_copy = data_copy.drop(columns=['venue', 'Unnamed: 0', 'Unnamed: 0.1'])
+    print(data_copy.columns)
+    venues = []
+    for doi in data_copy.doi:
+        if isinstance(doi, str) and len(doi)>1:
+            venue = scrape_venue_by_doi(doi = doi, fields = 'venue')
+            venues.append(venue)
+        else:
+            venues.append('')
+    data_copy['venue'] = venues
+    out_p = r"C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\null_venues_filled-by-doi.csv"
+    with open(out_p, 'w', encoding = 'utf-8', newline='') as f:
         data_copy.to_csv(f)
+
+
+def scrape_venue_by_title(title, n_limit, fields):
+    headers = create_headers()
+    url = 'https://api.semanticscholar.org/graph/v1/paper/search?query={}&limit={}&fields={}'.format(
+        title, n_limit, fields)
+    data = requests.get(url, allow_redirects=True, headers=headers).text
+    dic_data = json.loads(data)
+    if dic_data['data']:
+        print(dic_data['data'][0])
+        return dic_data['data'][0]['venue'], dic_data['data'][0]['title']
+    else:
+        return '', ''
+
+
+def main_by_title():
+    data_p = r"C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\null_venues_filled-by-doi.csv"
+    with open(data_p, 'r', encoding='utf-8') as f:
+        data = pd.read_csv(f)
+    data_copy = data.copy()
+    print(data_copy.columns)
+    count_null = 0
+    venues = []
+    for i in range(len(data_copy)):
+        print('---------------------------------------------------')
+        if isinstance(data_copy['venue'][i], float) or len(data_copy['venue'][i])<1:
+            title = data_copy['title'][i].lower()
+            print(title)
+            title_cleaned = title.replace(' ', '+').replace(',', '').replace(':', '').replace('-', '+')
+            try:
+                venue, re_title = scrape_venue_by_title(title=title_cleaned, n_limit=1, fields = 'title,venue')
+                venues.append(venue)
+                print('....successful.....\n', venue)
+                count_null += 1
+            except:
+                venues.append('')
+                print('fail!\n')
+            # if re.findall('[a-z]+', re_title) == re.findall('[a-z]+', title):
+            #     print(title, '<-match->', re_title)
+            #     venues.append(venue)
+            # else:
+            #     print(title, '>-not-match-<', re_title)
+            #     venues.append('')
+        else:
+            venues.append(data_copy['venue'][i])
+            print('already got venues: ', data_copy['venue'][i])
+    print(count_null)
+    data_copy = data_copy.drop(columns=['venue'])
+    data_copy['venue'] = venues
+    out_p = r"C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\null_venues_filled-by-titles.csv"
+    with open(out_p, 'w', encoding='utf-8', newline='') as f:
+        data_copy.to_csv(f)
+
 
 if __name__ == '__main__':
     # main_by_query()
-    main_by_doi()
+    # main_by_doi()
+    main_by_title()
 
