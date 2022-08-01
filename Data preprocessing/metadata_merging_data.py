@@ -76,7 +76,6 @@ def merge_SD_single(root_p, wanted_fields, wanted_size):
     return dfs
 
 
-
 def merge_cross_DBs(root_p, wanted_fields, wanted_size=1000):
     """
     Merge data collected from the 4 databases
