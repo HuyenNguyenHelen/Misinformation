@@ -19,22 +19,22 @@ def main_by_query ():
     fields = 'title,authors,abstract,venue,year,citationCount,fieldsOfStudy'
     queries = ['misinformation', 'disinformation', 'spam', 'fake+news', 'rumor', 'troll']
     for query in queries:
-      byquery = []
-      print('--------------%s---------------------'%query)
-      start_from = 0
-      no_limit = 99
-      total = no_limit+1
-      while start_from + no_limit < 1000:
-        no_total, offset, df = scrape_meta_by_query(query = query, start_from = start_from, no_limit = no_limit, fields = fields)
-        start_from += no_limit
-        total = no_total
-        print('start_from: ', start_from)
-        print('no_total: ', no_total)
-        byquery.append(df)
-      df_byquery = pd.concat(byquery)
-      with open(r'C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\metadata\metadata_sem-scholar_%s.csv'%query,
-                'w', encoding = 'utf-8', newline = '') as f:
-        df_byquery.to_csv(f)
+        byquery = []
+        print('--------------%s---------------------'%query)
+        start_from = 0
+        no_limit = 99
+        total = no_limit+1
+        while start_from + no_limit < 1000:
+            no_total, offset, df = scrape_meta_by_query(query = query, start_from = start_from, no_limit = no_limit, fields = fields)
+            start_from += no_limit
+            total = no_total
+            print('start_from: ', start_from)
+            print('no_total: ', no_total)
+            byquery.append(df)
+        df_byquery = pd.concat(byquery)
+        with open(r'C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\metadata\metadata_sem-scholar_%s.csv'%query,
+                    'w', encoding = 'utf-8', newline = '') as f:
+            df_byquery.to_csv(f)
 
 
 def create_headers():
@@ -69,31 +69,32 @@ def scrape_by_doi(doi, fields, wanted_field):
 def main_by_doi(data_p, out_p, wanted_field):
     with open(data_p, 'r', encoding = 'utf-8') as f:
         data = pd.read_csv(f)
-    data = data[:100]
+    # data = data
     print(data.columns)
     for field in wanted_field.split(','):
-        print(field)
-        data_with_wanted = data[data[field].notnull()]
-        print('data_with_wanted', data_with_wanted.shape)
-        print(data_with_wanted.head(3))
+        if len(field)>0:
+            print('----------------- %s ------------------'%field)
+            data_with_wanted = data[data[field].notnull()]
+            print('data_with_wanted', data_with_wanted.shape)
+            # print(data_with_wanted['abstract'].value_counts())
 
-        data_no_wanted = data[data[field].isnull()]
-        print('data_without_wanted', data_no_wanted.shape)
-        print(data_no_wanted.head(3))
+            data_no_wanted = data[data[field].isnull()]
+            print('data_without_wanted', data_no_wanted.shape)
+            # print(data_no_wanted['abstract'].value_counts())
 
-        wanted_content = []
-        for doi in data_no_wanted.doi:
-            if isinstance(doi, str) and len(doi)>1:
-                wanted_temp = scrape_by_doi(doi = doi, fields = wanted_field, wanted_field = field )
-                wanted_content.append(wanted_temp)
-            else:
-                wanted_content.append('')
-        data_no_wanted[field] = wanted_content
+            wanted_content = []
+            for doi in data_no_wanted.doi:
+                if isinstance(doi, str) and len(doi)>1:
+                    wanted_temp = scrape_by_doi(doi = doi, fields = wanted_field, wanted_field = field ) #.replace(',', '')
+                    wanted_content.append(wanted_temp)
+                else:
+                    wanted_content.append('')
+            data_no_wanted[field] = wanted_content
 
-        concat_data = pd.concat([data_with_wanted, data_no_wanted])
-        print('The final data has shape:', concat_data.shape)
-        print('Data with wanted:', concat_data[field].notnull().value_counts())
-        data = concat_data
+            concat_data = pd.concat([data_with_wanted, data_no_wanted])
+            print('The final data has shape:', concat_data.shape)
+            print('Data with wanted:', concat_data[field].notnull().value_counts())
+            data = concat_data
 
     with open(out_p, 'w', encoding = 'utf-8', newline='') as f:
         concat_data.to_csv(f)
@@ -153,13 +154,13 @@ def main_by_title():
 
 if __name__ == '__main__':
     # main_by_query()
-    # main_by_doi (data_p = r"C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal+doi+abstract_data.csv",
-    #             out_p = r"C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal+doi+abstract+year+citation+fieldofstudy.csv", 
-    #             wanted_field = 'citationCount,fieldsOfStudy,year')
+    main_by_doi (data_p = r"C:\Users\huyen\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal+doi+abstract_data.csv",
+                out_p = r"C:\Users\huyen\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal+doi+abstract+year+citation+fieldofstudy.csv", 
+                wanted_field = 'citationCount,fieldsOfStudy,year')
 
-    main_by_doi(data_p=r"C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal_data.csv",
-                out_p = r"C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal_data+abstract_filled.csv", 
-                wanted_field = 'abstract')
+    # main_by_doi(data_p=r"C:\Users\huyen\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal_data.csv",
+    #             out_p = r"C:\Users\huyen\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal_data+abstract_filled.csv", 
+    #             wanted_field = 'abstract,')
     # main_by_title()
 
 
