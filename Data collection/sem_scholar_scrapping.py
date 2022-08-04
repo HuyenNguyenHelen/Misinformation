@@ -154,13 +154,12 @@ def main_by_title():
 
 if __name__ == '__main__':
     # main_by_query()
+    # main_by_doi(data_p=r"C:\Users\huyen\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal_data.csv",
+    #         out_p = r"C:\Users\huyen\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal_data+abstract_filled.csv", 
+    #         wanted_field = 'abstract,')
     main_by_doi (data_p = r"C:\Users\huyen\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal+doi+abstract_data.csv",
                 out_p = r"C:\Users\huyen\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal+doi+abstract+year+citation+fieldofstudy.csv", 
                 wanted_field = 'citationCount,fieldsOfStudy,year')
-
-    # main_by_doi(data_p=r"C:\Users\huyen\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal_data.csv",
-    #             out_p = r"C:\Users\huyen\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal_data+abstract_filled.csv", 
-    #             wanted_field = 'abstract,')
     # main_by_title()
 
 
