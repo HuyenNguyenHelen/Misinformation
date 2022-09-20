@@ -60,18 +60,21 @@ if __name__ == '__main__':
     # Create PorterStemmer
     p_stemmer = PorterStemmer()
 
-    data_path = r"C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal+doi+abstract+year+citation+fieldofstudy_dropnull.csv"
-    out_path = r'C:\Users\hn0139\Documents\GitHub\Misinformation\Data analysis\Content analysis\topics.csv'
-    
+    # data_path = r"C:\Users\hn0139\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\metadata\merged_all_data\journal+doi+abstract+year+citation+fieldofstudy_dropnull.csv"
+    # out_path = r'C:\Users\hn0139\Documents\GitHub\Misinformation\Data analysis\Content analysis\topics.csv'
+    data_path = r"C:\Users\huyen\OneDrive - UNT System\A_PhD_PATH\PROJECTS\Misinformation\Misinformation_literature_review\analysis\backup_coded-data-analysis_08282022\backup_coded-data-analysis_08282022.csv"
+    out_path = r'C:\Users\huyen\Documents\GitHub\Misinformation\Data analysis\Content analysis\topics_subset_results.csv'
+
     with open(data_path, 'r', encoding = 'utf-8') as f:    
         data = pd.read_csv(f)
+    print(data.columns)
 
-    join_fn = lambda x : ' '.join([x.title, x.abstract])
-    join_text = data.apply(join_fn, axis=1)
-
+    # join_fn = lambda x : ' '.join([x.title, x.abstract])
+    # join_text = data.apply(join_fn, axis=1)
+'''
     clean_text = [preprocessing(tokenizer, text) for text in join_text]
     
-    topics, coherences = get_lda_topic (clean_text, n_topics = [30], n_words = 10) # 25, 30, 35, 40
+    topics, coherences = get_lda_topic (clean_text, n_topics = [10,11,12,13,14,15], n_words = 10) # 25, 30, 35, 40
     best_cor_score = max(list(coherences.values()))
     best_cor_idx = list(coherences.values()).index(best_cor_score)
     best_n_topics = {v:k for k, v in coherences.items()}[best_cor_score]
@@ -80,3 +83,4 @@ if __name__ == '__main__':
     print('best n_topic: {} topics. Cohenrence score: {} \nTopics: \n{}'.format(best_n_topics, coherences, best_topics))
     with open(out_path, 'w',  newline="", encoding='utf-8') as file:
         best_topics.to_csv(file)
+'''
