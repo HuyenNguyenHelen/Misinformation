@@ -1,6 +1,6 @@
 # Misinformation: A Systematic Review
  
-This repository is for storing the selected data, codes, and analysis results of the systematic review paper "Fighting Misinformation: Where Are We and Where to Go?", published on iConference 2023.
+This repository is for storing the selected data, codes, and analysis results of the systematic review paper ["Fighting Misinformation: Where Are We and Where to Go?"](https://dl.acm.org/doi/abs/10.1007/978-3-031-28035-1_27), published on iConference 2023.
 
 ### Selected data
 - [For meta-analysis](https://github.com/HuyenNguyenHelen/Misinformation-Systematic-Review/blob/main/Selected%20data/selected-data_automatic-analysis.csv)
