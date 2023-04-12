@@ -38,7 +38,7 @@ def main_by_query ():
 
 
 def create_headers():
-    APIkey = 'Z7TWzEV1Wb5PBEjBkp3rL30fdqqEmfb0501oqtLb'
+    APIkey = 'xxx'
     headers = {"x-api-key": "{}".format(APIkey)}
     return headers
 
